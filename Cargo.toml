@@ -1,0 +1,16 @@
+[package]
+name = "hellcheck"
+version = "0.1.0"
+authors = ["Sergey Potapov <blake131313@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+hyper = "0.12.18"
+hyper-tls = "0.3.1"
+openssl-probe = "0.1.2"
+tokio-timer = "*"
+futures = "*"
+tokio-core = "*"
+humantime = "*"
+
+yaml-rust = "*"
