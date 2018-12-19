@@ -22,19 +22,26 @@ notifiers:
 #[derive(Debug)]
 struct FileConfig {
     checkers: Vec<CheckerConfig>,
-    notifiers: Vec<NotifierConfig>
+    notifiers: Vec<Notifier>
 }
 
 #[derive(Debug)]
 struct TelegramNotifierConfig {
     token: String,
-    chat_id: u64
+    chat_id: String
+}
+
+#[derive(Debug)]
+struct Notifier {
+    id: String,
+    config: NotifierConfig,
 }
 
 #[derive(Debug)]
 enum NotifierConfig {
     Telegram(TelegramNotifierConfig)
 }
+
 
 #[derive(Debug)]
 struct CheckerConfig {
@@ -85,6 +92,7 @@ fn parse_key(key: &Yaml) -> String {
 fn parse_yaml_to_string(val: &Yaml) -> String {
     match val {
         Yaml::String(s) => s.to_owned(),
+        Yaml::Integer(num) => num.to_string(),
         _ => panic!("Value must be a string. Got {:?}", val)
     }
 }
@@ -105,9 +113,84 @@ fn parse_yaml_to_vec(val: &Yaml) -> Vec<String> {
     items
 }
 
-fn parse_notifiers(notifier_configs: &Yaml) -> Vec<NotifierConfig> {
-    vec![]
+fn parse_yaml_to_hash(val: &Yaml) -> &yaml_rust::yaml::Hash {
+    match val {
+        Yaml::Hash(hash) => hash,
+        _ => panic!("Value must be a hash. Got {:?}", val)
+    }
 }
+
+fn parse_notifiers(notifier_configs: &Yaml) -> Vec<Notifier> {
+    let mut notifiers = vec![];
+
+    match notifier_configs {
+        Yaml::Hash(hash) => {
+            for (yaml_key, val) in hash.iter() {
+                let checker = parse_notifier(yaml_key, val);
+                notifiers.push(checker);
+            }
+        },
+        _ => panic!("notifiers must be a hash")
+    }
+
+    notifiers
+}
+
+fn parse_notifier(key: &Yaml, body: &Yaml) -> Notifier {
+    let id = parse_key(key);
+    let config = parse_notifier_config(&id, body);
+
+    Notifier { id, config }
+}
+
+fn parse_notifier_config(id: &str, body: &Yaml) -> NotifierConfig {
+    let hash = parse_yaml_to_hash(body);
+    let type_val_yaml = hash.get(&Yaml::String("type".to_owned()))
+        .expect(&format!("notifiers.{}.type is missing", id));
+
+    let type_val = parse_yaml_to_string(type_val_yaml);
+    println!("{:?}", type_val);
+
+    match type_val.as_ref() {
+        "telegram" => parse_telegram_notifier_config(id, body),
+        _ => panic!(format!("notifiers.{}.type has invalid value `{}`", id, type_val))
+    }
+}
+
+fn parse_telegram_notifier_config(id: &str, body: &Yaml) -> NotifierConfig {
+    let mut token_opt: Option<String> = None;
+    let mut chat_id_opt: Option<String> = None;
+
+    match body {
+        Yaml::Hash(hash) => {
+            for (attr_yaml_key, attr_yaml_val) in hash {
+                let attr_key = parse_key(&attr_yaml_key);
+
+                match attr_key.as_ref() {
+                    "type" => (),
+                    "token" => {
+                        let attr_val = parse_yaml_to_string(&attr_yaml_val);
+                        token_opt = Some(attr_val);
+                    },
+                    "chat_id" => {
+                        let attr_val = parse_yaml_to_string(&attr_yaml_val);
+                        chat_id_opt = Some(attr_val);
+                    },
+                    _ => panic!("Unknown telegram notifier attribute: notifiers.{}.{}", id, attr_key)
+                }
+            }
+        },
+        _ => panic!("notifiers.{} must be a hash", id)
+    };
+
+    let token = token_opt.expect(&format!("Missing notifiers.{}.token", id));
+    let chat_id = chat_id_opt.expect(&format!("Missing notifiers.{}.chat_id", id));
+
+    let telegram_config = TelegramNotifierConfig { token, chat_id };
+    NotifierConfig::Telegram(telegram_config)
+}
+
+
 
 fn parse_checkers(checker_configs: &Yaml) -> Vec<CheckerConfig> {
     let mut checkers = vec![];
