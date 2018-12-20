@@ -8,49 +8,39 @@ use humantime::Duration as HumanDuration;
 
 use hyper_tls::HttpsConnector;
 
-
 type HttpsClient = hyper::Client<hyper_tls::HttpsConnector<hyper::client::connect::HttpConnector>>;
 
+mod config;
+mod config_parser;
 
-#[derive(Debug)]
-struct ServiceConfig {
-    id: String,
-    uri: Uri,
-    interval: Duration
+use crate::config::{FileConfig, CheckerConfig, NotifierConfig, Notifier, TelegramNotifierConfig};
+use crate::config_parser::parse_config;
+
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::BufReader;
+
+pub fn load_config() -> FileConfig {
+    let file = File::open("./hellcheck.yml").unwrap();
+    let mut buf_reader = BufReader::new(file);
+    let mut content = String::new();
+    buf_reader.read_to_string(&mut content).expect("Failed to read from file");
+    parse_config(&content)
 }
 
 pub fn run() {
-    // Necessary to make OpenSSL work in a static build.
-    // See: https://github.com/emk/rust-musl-builder#making-openssl-work
-    openssl_probe::init_ssl_cert_env_vars();
+    let config = load_config();
 
-    let items = vec![
-        ("ip", "http://httpbin.org/ip", "1s"),
-        ("404", "http://httpbin.org/ip21", "10s"),
-        ("greyblake", "https://www.greyblake.com", "2s")
-    ];
+    println!("{:#?}", config);
 
-
-    let fs = items.into_iter()
-        .map(build_service_config)
-        .map(build_fff);
-
+    let fs = config.checkers.clone().into_iter().map(build_fff);
     let f = futures::future::select_all(fs);
 
     let mut core = tokio_core::reactor::Core::new().unwrap();
     core.run(f);
 }
 
-fn build_service_config((id, url, iterval):(&'static str, &'static str, &'static str)) -> ServiceConfig {
-    let sc = ServiceConfig {
-        id: id.to_owned(),
-        uri: url.parse().unwrap(),
-        interval: iterval.parse::<humantime::Duration>().unwrap().into()
-    };
-    sc
-}
-
-fn build_fff(service: ServiceConfig) -> Box<Future<Item=(), Error=tokio_timer::Error>> {
+fn build_fff(service: CheckerConfig) -> Box<Future<Item=(), Error=tokio_timer::Error>> {
     let stream = tokio_timer::Interval::new_interval(service.interval);
     let client = build_client();
 
@@ -59,7 +49,7 @@ fn build_fff(service: ServiceConfig) -> Box<Future<Item=(), Error=tokio_timer::E
     let f = stream.for_each(move |_| {
         let idd = id.clone();
         client
-            .get(service.uri.clone())
+            .get(service.url.clone())
             .map(move |res| {
                 let iddd = idd.clone();
                 println!("Response: {} {}", res.status(), iddd);
