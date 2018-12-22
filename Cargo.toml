@@ -3,6 +3,12 @@ name = "hellcheck"
 version = "0.1.0"
 authors = ["Sergey Potapov <blake131313@gmail.com>"]
 edition = "2018"
+description = "HTTP health checker"
+keywords = ["healthcheck", "http", "monitor", "notification", "health"]
+license = "MIT"
+repository = "https://github.com/greyblake/hellcheck"
+homepage = "https://github.com/greyblake/hellcheck"
+categories = ["web-programming", "network-programming"]
 
 [dependencies]
 hyper = "0.12.18"
