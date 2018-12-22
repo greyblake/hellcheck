@@ -15,7 +15,7 @@ With cargo:
 cargo install hellcheck
 ```
 
-## Configuration
+### Configuration file
 
 Create `hellcheck.yml` file:
 
@@ -30,6 +30,15 @@ notifiers:
     type: telegram
     token: <BOT-TOKEN>
     chat_id: <CHAT-ROOM-ID>
+```
+
+### Start
+
+Assuming, you have `./hellcheck.yml` in your current directory, this will start monitoring of the services,
+described in `checkers` configuration sections:
+
+```
+hellcheck
 ```
 
 ## License
