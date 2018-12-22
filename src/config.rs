@@ -31,3 +31,19 @@ pub struct CheckerConfig {
     pub interval: Duration,
     pub notifiers: Vec<String>
 }
+
+impl FileConfig {
+    pub fn get_checker_by_id(&self, id: &str) -> Option<CheckerConfig> {
+        self.checkers
+            .iter()
+            .find(|c| c.id == id)
+            .map(|c| c.clone())
+    }
+
+    pub fn get_notifier_by_id(&self, id: &str) -> Option<Notifier> {
+        self.notifiers
+            .iter()
+            .find(|n| n.id == id)
+            .map(|n| n.clone())
+    }
+}

@@ -1,24 +1,22 @@
-use std::io::{self, Write};
 use hyper::Client;
-use hyper::rt::{self, Future, Stream};
-use hyper::Uri;
-
-use std::time::Duration;
-use humantime::Duration as HumanDuration;
-
+use hyper::rt::{Future, Stream};
 use hyper_tls::HttpsConnector;
-
-type HttpsClient = hyper::Client<hyper_tls::HttpsConnector<hyper::client::connect::HttpConnector>>;
-
-mod config;
-mod config_parser;
-
-use crate::config::{FileConfig, CheckerConfig, NotifierConfig, Notifier, TelegramNotifierConfig};
-use crate::config_parser::parse_config;
 
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::sync::mpsc;
+
+mod config;
+mod config_parser;
+mod reactor;
+
+use crate::config::{FileConfig, CheckerConfig};
+use crate::config_parser::parse_config;
+use crate::reactor::{StateMessage, State};
+
+
+type HttpsClient = hyper::Client<hyper_tls::HttpsConnector<hyper::client::connect::HttpConnector>>;
 
 pub fn load_config() -> FileConfig {
     let file = File::open("./hellcheck.yml").unwrap();
@@ -28,39 +26,61 @@ pub fn load_config() -> FileConfig {
     parse_config(&content)
 }
 
+
+
 pub fn run() {
     let config = load_config();
 
-    println!("{:#?}", config);
 
-    let fs = config.checkers.clone().into_iter().map(build_fff);
+    let (sender, receiver) = mpsc::channel::<StateMessage>();
+
+    reactor::spawn(receiver, config.clone());
+
+    let check_runner = CheckRunner { config, sender  };
+
+
+    let fs = check_runner.config.checkers.iter().map(|c| check_runner.build_fff(c));
     let f = futures::future::select_all(fs);
 
     let mut core = tokio_core::reactor::Core::new().unwrap();
     core.run(f);
 }
 
-fn build_fff(service: CheckerConfig) -> Box<Future<Item=(), Error=tokio_timer::Error>> {
-    let stream = tokio_timer::Interval::new_interval(service.interval);
-    let client = build_client();
+struct CheckRunner {
+    config: FileConfig,
+    sender: mpsc::Sender<StateMessage>
+}
 
-    let id = service.id.clone();
+impl CheckRunner {
+    fn build_fff<'a>(&'a self, service: &'a CheckerConfig) -> Box<Future<Item=(), Error=tokio_timer::Error> + 'a> {
+        let stream = tokio_timer::Interval::new_interval(service.interval);
+        let client = build_client();
 
-    let f = stream.for_each(move |_| {
-        let idd = id.clone();
-        client
-            .get(service.url.clone())
-            .map(move |res| {
-                let iddd = idd.clone();
-                println!("Response: {} {}", res.status(), iddd);
-            })
-            .map_err(|err| {
-                println!("Error: {}", err);
-            }).then(|r| {
-                Ok(())
-            })
-    });
-    Box::new(f)
+        let id = service.id.clone();
+
+        let f = stream.for_each(move |_| {
+            let checker_id = id.clone();
+            client
+                .get(service.url.clone())
+                .then(move |r| {
+                    let state = match r {
+                        Ok(resp) => {
+                            if resp.status() == 200 {
+                                State::Up
+                            } else {
+                                State::Down
+                            }
+                        },
+                        Err(_err) => State::Down
+                    };
+                    let msg = StateMessage { checker_id: checker_id.clone(), state };
+                    self.sender.send(msg).unwrap();
+
+                    Ok(())
+                })
+        });
+        Box::new(f)
+    }
 }
 
 

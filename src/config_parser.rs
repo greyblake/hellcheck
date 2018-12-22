@@ -103,7 +103,6 @@ fn parse_notifier_config(id: &str, body: &Yaml) -> NotifierConfig {
         .expect(&format!("notifiers.{}.type is missing", id));
 
     let type_val = parse_yaml_to_string(type_val_yaml);
-    println!("{:?}", type_val);
 
     match type_val.as_ref() {
         "telegram" => parse_telegram_notifier_config(id, body),
