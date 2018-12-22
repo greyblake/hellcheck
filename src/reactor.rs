@@ -1,5 +1,5 @@
 use std::sync::mpsc;
-use crate::config::{FileConfig, CheckerConfig, Notifier, NotifierConfig, TelegramNotifierConfig};
+use crate::config::{FileConfig, CheckerConfig, Notifier, NotifierConfig};
 
 use std::collections::HashMap;
 
@@ -53,7 +53,7 @@ fn build_initial_states(config: &FileConfig) -> HashMap<String, State> {
 }
 
 
-use hyper::{Method, Request};
+use hyper::Method;
 
 
 fn notify(notifier: Notifier, checker: &CheckerConfig, state: &State) {
