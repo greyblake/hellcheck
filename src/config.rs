@@ -8,9 +8,11 @@ pub struct FileConfig {
 }
 
 #[derive(Debug, Clone)]
-pub struct TelegramNotifierConfig {
-    pub token: String,
-    pub chat_id: String
+pub struct CheckerConfig {
+    pub id: String,
+    pub url: Uri,
+    pub interval: Duration,
+    pub notifiers: Vec<String>
 }
 
 #[derive(Debug, Clone)]
@@ -21,15 +23,20 @@ pub struct Notifier {
 
 #[derive(Debug, Clone)]
 pub enum NotifierConfig {
-    Telegram(TelegramNotifierConfig)
+    Telegram(TelegramNotifierConfig),
+    Command(CommandNotifierConfig),
 }
 
 #[derive(Debug, Clone)]
-pub struct CheckerConfig {
-    pub id: String,
-    pub url: Uri,
-    pub interval: Duration,
-    pub notifiers: Vec<String>
+pub struct TelegramNotifierConfig {
+    pub token: String,
+    pub chat_id: String
+}
+
+#[derive(Debug, Clone)]
+pub struct CommandNotifierConfig {
+    pub command: String,
+    pub arguments: Vec<String>
 }
 
 impl FileConfig {

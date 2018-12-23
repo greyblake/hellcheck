@@ -2,10 +2,8 @@ use std::collections::HashMap;
 use std::sync::mpsc;
 
 use crate::config::{FileConfig, CheckerConfig, NotifierConfig};
-use crate::notifiers::{Notification, TelegramNotifier};
+use crate::notifiers::{Notification, TelegramNotifier, CommandNotifier};
 use crate::notifiers::Notifier as NotifierTrait;
-
-
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -75,8 +73,9 @@ fn build_initial_states(config: &FileConfig) -> HashMap<String, State> {
 fn build_notifiers(config: &FileConfig) -> HashMap<String, Box<NotifierTrait>> {
     let mut notifiers: HashMap<String, Box<NotifierTrait>> = HashMap::new();
     for notifier_config in config.notifiers.iter() {
-        let notifier = match &notifier_config.config {
-            NotifierConfig::Telegram(telegram_config) => Box::new(TelegramNotifier::from_config(telegram_config))
+        let notifier: Box<NotifierTrait>  = match &notifier_config.config {
+            NotifierConfig::Telegram(telegram_config) => Box::new(TelegramNotifier::from_config(telegram_config)),
+            NotifierConfig::Command(command_config) => Box::new(CommandNotifier::from_config(command_config))
         };
         notifiers.insert(notifier_config.id.clone(), notifier);
     }

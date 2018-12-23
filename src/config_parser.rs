@@ -3,7 +3,7 @@ use std::time::Duration;
 use hyper::Uri;
 use yaml_rust::{YamlLoader, yaml::Yaml};
 
-use crate::config::{FileConfig, CheckerConfig, NotifierConfig, Notifier, TelegramNotifierConfig};
+use crate::config::{FileConfig, CheckerConfig, NotifierConfig, Notifier, TelegramNotifierConfig, CommandNotifierConfig};
 use crate::error::ConfigError;
 
 type Result<T> = std::result::Result<T, ConfigError>;
@@ -133,6 +133,10 @@ fn parse_notifier_config(id: &str, body: &Yaml) -> Result<NotifierConfig> {
             let config = parse_telegram_notifier_config(id, body)?;
             Ok(NotifierConfig::Telegram(config))
         },
+        "command" => {
+            let config = parse_command_notifier_config(id, body)?;
+            Ok(NotifierConfig::Command(config))
+        }
         _ => {
             let e = ConfigError::InvalidNotifierType { notifier_id: id.to_owned(), type_value: type_val };
             Err(e)
@@ -183,7 +187,56 @@ fn parse_telegram_notifier_config(id: &str, body: &Yaml) -> Result<TelegramNotif
     Ok(config)
 }
 
+fn parse_command_notifier_config(id: &str, body: &Yaml) -> Result<CommandNotifierConfig> {
+    let mut config_opt: Option<CommandNotifierConfig> = None;
 
+    match body {
+        Yaml::Hash(hash) => {
+            for (attr_yaml_key, attr_yaml_val) in hash {
+                let attr_key = parse_key(&attr_yaml_key)?;
+
+                match attr_key.as_ref() {
+                    "type" => (),
+                    "command" => {
+                        match parse_yaml_to_vec(&attr_yaml_val) {
+                            Ok(vals) => {
+                                if let Some((command, arguments)) = vals.split_first() {
+                                    let config = CommandNotifierConfig {
+                                        command: command.clone(),
+                                        arguments: arguments.to_vec()
+                                    };
+                                    config_opt = Some(config);
+                                } else {
+                                    let message = format!("`notifiers.{}.command` must have a command specified", id);
+                                    return Err(ConfigError::GeneralError { message: message });
+                                }
+                            },
+                            Err(_) => {
+                                let message = format!("`notifiers.{}.command` must be an array.", id);
+                                return Err(ConfigError::GeneralError { message: message });
+                            }
+                        }
+                    },
+                    _ => {
+                        let e = ConfigError::UnknownNotifierAttribute {
+                            notifier_id: id.to_string(),
+                            notifier_type: "command".to_owned(),
+                            attr_name: attr_key
+                        };
+                        return Err(e);
+                    }
+                }
+            }
+        },
+        _ => {
+            let message = format!("`notifiers.{}` must be a hash. Got {:?}", id, body);
+            return Err(ConfigError::GeneralError { message: message });
+        }
+    };
+
+    let config = config_opt.ok_or(ConfigError::FieldMissing { path: format!("notifiers.{}.command", id) } )?;
+    Ok(config)
+}
 
 fn parse_checkers(checker_configs: &Yaml) -> Result<Vec<CheckerConfig>> {
     let mut checkers = vec![];
