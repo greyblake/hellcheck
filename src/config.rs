@@ -45,9 +45,6 @@ impl FileConfig {
     }
 
     pub fn get_notifier_by_id(&self, id: &str) -> Option<Notifier> {
-        self.notifiers
-            .iter()
-            .find(|n| n.id == id)
-            .cloned()
+        self.notifiers.iter().find(|n| n.id == id).cloned()
     }
 }
