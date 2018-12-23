@@ -7,6 +7,8 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::sync::mpsc;
 
+
+mod error;
 mod config;
 mod config_parser;
 mod reactor;
@@ -23,7 +25,14 @@ pub fn load_config() -> FileConfig {
     let mut buf_reader = BufReader::new(file);
     let mut content = String::new();
     buf_reader.read_to_string(&mut content).expect("Failed to read from file");
-    parse_config(&content)
+
+    match parse_config(&content) {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("{}", err);
+            std::process::exit(1);
+        }
+    }
 }
 
 
@@ -31,16 +40,12 @@ pub fn load_config() -> FileConfig {
 pub fn run() {
     let config = load_config();
 
-
     let (sender, receiver) = mpsc::channel::<StateMessage>();
-
     reactor::spawn(receiver, config.clone());
 
     let check_runner = CheckRunner { config, sender  };
-
-
-    let fs = check_runner.config.checkers.iter().map(|c| check_runner.build_fff(c));
-    let f = futures::future::select_all(fs);
+    let checkers_futures = check_runner.config.checkers.iter().map(|c| check_runner.build_future(c));
+    let f = futures::future::select_all(checkers_futures);
 
     let mut core = tokio_core::reactor::Core::new().unwrap();
     core.run(f);
@@ -52,7 +57,7 @@ struct CheckRunner {
 }
 
 impl CheckRunner {
-    fn build_fff<'a>(&'a self, service: &'a CheckerConfig) -> Box<Future<Item=(), Error=tokio_timer::Error> + 'a> {
+    fn build_future<'a>(&'a self, service: &'a CheckerConfig) -> Box<Future<Item=(), Error=tokio_timer::Error> + 'a> {
         let stream = tokio_timer::Interval::new_interval(service.interval);
         let client = build_client();
 

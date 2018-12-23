@@ -89,12 +89,9 @@ fn notify(notifier: Notifier, checker: &CheckerConfig, state: &State) {
             );
 
             let f = client.request(request).and_then(|res| {
-                // println!("{:?}", res);
                 res.into_body().concat2()
-
             });
-            let body = core.run(f).unwrap();
-            //println!("{:?}", body);
+            core.run(f).unwrap();
         }
     }
 }
