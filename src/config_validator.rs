@@ -39,17 +39,14 @@ fn verify_checker_notifiers(config: &FileConfig) -> Result<()> {
 // Ensure all CommandNotifier refers to an existing command
 fn verify_command_notifiers(config: &FileConfig) -> Result<()> {
     for notifier in config.notifiers.iter() {
-        match &notifier.config {
-            NotifierConfig::Command(c) => {
-                if !command_exists(&c.command) {
-                    let err = ConfigValidationError::CommandNotFound {
-                        notifier_id: notifier.id.clone(),
-                        command: c.command.clone(),
-                    };
-                    return Err(err);
-                }
+        if let NotifierConfig::Command(c) = &notifier.config {
+            if !command_exists(&c.command) {
+                let err = ConfigValidationError::CommandNotFound {
+                    notifier_id: notifier.id.clone(),
+                    command: c.command.clone(),
+                };
+                return Err(err);
             }
-            _ => {}
         }
     }
     Ok(())

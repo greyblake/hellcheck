@@ -56,7 +56,7 @@ fn parse_key(key: &Yaml) -> Result<String> {
         Yaml::Integer(num) => Ok(num.to_string()),
         _ => {
             let message = format!("Key must be a string. Got {:?}", key);
-            Err(ConfigError::GeneralError { message: message })
+            Err(ConfigError::GeneralError { message })
         }
     }
 }
@@ -67,7 +67,7 @@ fn parse_yaml_to_string(val: &Yaml) -> Result<String> {
         Yaml::Integer(num) => Ok(num.to_string()),
         _ => {
             let message = format!("Key must be a string. Got {:?}", val);
-            Err(ConfigError::GeneralError { message: message })
+            Err(ConfigError::GeneralError { message })
         }
     }
 }
@@ -84,7 +84,7 @@ fn parse_yaml_to_vec(val: &Yaml) -> Result<Vec<String>> {
         }
         _ => {
             let message = format!("Value must be an array. Got {:?}", val);
-            return Err(ConfigError::GeneralError { message: message });
+            return Err(ConfigError::GeneralError { message });
         }
     }
 
@@ -96,7 +96,7 @@ fn parse_yaml_to_hash(val: &Yaml) -> Result<&yaml_rust::yaml::Hash> {
         Yaml::Hash(hash) => Ok(hash),
         _ => {
             let message = format!("Value must be a hash. Got {:?}", val);
-            return Err(ConfigError::GeneralError { message: message });
+            Err(ConfigError::GeneralError { message })
         }
     }
 }
@@ -113,7 +113,7 @@ fn parse_notifiers(notifier_configs: &Yaml) -> Result<Vec<Notifier>> {
         }
         _ => {
             let message = format!("`notifiers` must be a hash. Got {:?}", notifier_configs);
-            return Err(ConfigError::GeneralError { message: message });
+            return Err(ConfigError::GeneralError { message });
         }
     }
 
@@ -189,7 +189,7 @@ fn parse_telegram_notifier_config(id: &str, body: &Yaml) -> Result<TelegramNotif
         }
         _ => {
             let message = format!("`notifiers.{}` must be a hash. Got {:?}", id, body);
-            return Err(ConfigError::GeneralError { message: message });
+            return Err(ConfigError::GeneralError { message });
         }
     };
 
@@ -227,12 +227,12 @@ fn parse_command_notifier_config(id: &str, body: &Yaml) -> Result<CommandNotifie
                                     "`notifiers.{}.command` must have a command specified",
                                     id
                                 );
-                                return Err(ConfigError::GeneralError { message: message });
+                                return Err(ConfigError::GeneralError { message });
                             }
                         }
                         Err(_) => {
                             let message = format!("`notifiers.{}.command` must be an array.", id);
-                            return Err(ConfigError::GeneralError { message: message });
+                            return Err(ConfigError::GeneralError { message });
                         }
                     },
                     _ => {
@@ -248,7 +248,7 @@ fn parse_command_notifier_config(id: &str, body: &Yaml) -> Result<CommandNotifie
         }
         _ => {
             let message = format!("`notifiers.{}` must be a hash. Got {:?}", id, body);
-            return Err(ConfigError::GeneralError { message: message });
+            return Err(ConfigError::GeneralError { message });
         }
     };
 
@@ -270,7 +270,7 @@ fn parse_checkers(checker_configs: &Yaml) -> Result<Vec<CheckerConfig>> {
         }
         _ => {
             let message = format!("`checkers` must be a hash. Got {:?}", checker_configs);
-            return Err(ConfigError::GeneralError { message: message });
+            return Err(ConfigError::GeneralError { message });
         }
     }
 
@@ -336,7 +336,7 @@ fn parse_checker(key: &Yaml, body: &Yaml) -> Result<CheckerConfig> {
         }
         _ => {
             let message = format!("`checkers.{}` must be a hash. Got {:?}", id, body);
-            return Err(ConfigError::GeneralError { message: message });
+            return Err(ConfigError::GeneralError { message });
         }
     };
 

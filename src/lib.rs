@@ -124,7 +124,5 @@ impl CheckRunner {
 
 fn build_client() -> HttpsClient {
     let https = HttpsConnector::new(1).expect("TLS initialization failed");
-    let client = Client::builder().build::<_, hyper::Body>(https);
-
-    client
+    Client::builder().build::<_, hyper::Body>(https)
 }
