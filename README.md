@@ -2,10 +2,27 @@
 
 HTTP health checker.
 
-
 ## Getting started
 
-DISCLAIMER: This is an MVP version, the project is ongoing development.
+DISCLAIMER: This is a prove of concept, the project is ongoing development.
+
+## Roadmap
+
+* [ ] Support notifiers
+  * [x] command customer notifier
+  * [x] telegram
+  * [ ] Slack
+  * [ ] HipChat
+* [ ] Checkers
+  * [x] Custom intervals
+  * [ ] Verify body (presence of some given text)
+  * [ ] Custom OKish HTTP status
+* [ ] Use structopt/clap for nice command line interface
+* [ ] Implement `hellcheck test` command to test notifiers
+* [ ] Configure CI
+  * [ ] Run build/tests
+  * [ ] Setup clippy lint
+  * [ ] Setup rusmft
 
 ### Install
 
