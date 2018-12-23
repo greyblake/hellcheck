@@ -10,7 +10,7 @@ pub use self::command::CommandNotifier;
 pub struct Notification {
     pub checker_id: String,
     pub checker_url: String,
-    pub state: State
+    pub state: State,
 }
 
 pub trait Notifier {

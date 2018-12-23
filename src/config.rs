@@ -1,10 +1,10 @@
-use std::time::Duration;
 use hyper::Uri;
+use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub struct FileConfig {
     pub checkers: Vec<CheckerConfig>,
-    pub notifiers: Vec<Notifier>
+    pub notifiers: Vec<Notifier>,
 }
 
 #[derive(Debug, Clone)]
@@ -12,7 +12,7 @@ pub struct CheckerConfig {
     pub id: String,
     pub url: Uri,
     pub interval: Duration,
-    pub notifiers: Vec<String>
+    pub notifiers: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -30,27 +30,21 @@ pub enum NotifierConfig {
 #[derive(Debug, Clone)]
 pub struct TelegramNotifierConfig {
     pub token: String,
-    pub chat_id: String
+    pub chat_id: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct CommandNotifierConfig {
     pub command: String,
-    pub arguments: Vec<String>
+    pub arguments: Vec<String>,
 }
 
 impl FileConfig {
     pub fn get_checker_by_id(&self, id: &str) -> Option<CheckerConfig> {
-        self.checkers
-            .iter()
-            .find(|c| c.id == id)
-            .map(|c| c.clone())
+        self.checkers.iter().find(|c| c.id == id).cloned()
     }
 
     pub fn get_notifier_by_id(&self, id: &str) -> Option<Notifier> {
-        self.notifiers
-            .iter()
-            .find(|n| n.id == id)
-            .map(|n| n.clone())
+        self.notifiers.iter().find(|n| n.id == id).cloned()
     }
 }

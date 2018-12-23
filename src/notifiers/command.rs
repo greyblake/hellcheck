@@ -1,19 +1,19 @@
 use std::process::Command;
 
-use crate::notifiers::{Notification, Notifier};
 use crate::config::CommandNotifierConfig;
+use crate::notifiers::{Notification, Notifier};
 use crate::reactor::State;
 
 pub struct CommandNotifier {
     command: String,
-    arguments: Vec<String>
+    arguments: Vec<String>,
 }
 
 impl CommandNotifier {
     pub fn from_config(config: &CommandNotifierConfig) -> Self {
         Self {
             command: config.command.clone(),
-            arguments: config.arguments.clone()
+            arguments: config.arguments.clone(),
         }
     }
 }
@@ -22,7 +22,7 @@ impl Notifier for CommandNotifier {
     fn notify(&self, notification: &Notification) -> Result<(), ()> {
         let ok = match notification.state {
             State::Up => "true".to_owned(),
-            State::Down => "false".to_owned()
+            State::Down => "false".to_owned(),
         };
 
         let res = Command::new(&self.command)
@@ -39,8 +39,8 @@ impl Notifier for CommandNotifier {
                 } else {
                     Err(())
                 }
-            },
-            Err(_) => Err(())
+            }
+            Err(_) => Err(()),
         }
     }
 }
