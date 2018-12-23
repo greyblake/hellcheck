@@ -29,7 +29,24 @@ notifiers:
   me:
     type: telegram
     token: <BOT-TOKEN>
-    chat_id: <CHAT-ROOM-ID>
+    chat_id: <CHAT-ID>
+```
+
+## Notifiers
+
+### Telegram
+
+For telegram notifier you have to create a bot with [BotFather](https://telegram.me/BotFather) and
+obtain the bot token.
+
+Chat ID can be found out with [GetidsBot](https://telegram.me/getidsbot).
+
+```
+notifiers:
+  me:
+    type: telegram
+    token: <BOT-TOKEN>
+    chat_id: <CHAT-ID>
 ```
 
 ### Start
