@@ -33,5 +33,8 @@ pub enum ConfigError {
 #[derive(Debug, Fail, PartialEq)]
 pub enum ConfigValidationError {
     #[fail(display = "`checkers.{}.notifiers` refers to an undeclared notifier `{}`", checker_id, notifier_id)]
-    UnknownNotifier { checker_id: String, notifier_id: String }
+    UnknownNotifier { checker_id: String, notifier_id: String },
+
+    #[fail(display = "`notifiers.{}.command` refers to `{}`, but it is not executable", notifier_id, command)]
+    CommandNotFound { notifier_id: String, command: String }
 }

@@ -36,7 +36,7 @@ notifiers:
     chat_id: <CHAT-ID>
   custom:
     type: command
-    command: ["/path/to/custom-notifier.sh", "arg1", "arg2"]
+    command: ["./custom.sh", "arg1", "arg2"]
 ```
 
 ## Notifiers

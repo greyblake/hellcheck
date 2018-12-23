@@ -1,3 +1,6 @@
 /target
 **/*.rs.bk
+
+# Files for local testing
 hellcheck.yml
+custom.sh

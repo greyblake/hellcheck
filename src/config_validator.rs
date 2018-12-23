@@ -1,12 +1,13 @@
 // Validates FileConfig for inconsistencies.
 
-use crate::config::FileConfig;
+use crate::config::{FileConfig, Notifier, NotifierConfig};
 use crate::error::ConfigValidationError;
 
 type Result<T> = ::std::result::Result<T, ConfigValidationError>;
 
 pub fn validate_config(config: &FileConfig) -> Result<Vec<String>> {
     verify_checker_notifiers(config)?;
+    verify_command_notifiers(config)?;
 
     let mut warnings: Vec<String> = vec![];
     verify_empty_notifiers(config, &mut warnings);
@@ -34,6 +35,37 @@ fn verify_checker_notifiers(config: &FileConfig) -> Result<()> {
     }
 
     Ok(())
+}
+
+// Ensure all CommandNotifier refers to an existing command
+fn verify_command_notifiers(config: &FileConfig) -> Result<()> {
+    for notifier in config.notifiers.iter() {
+        match &notifier.config {
+            NotifierConfig::Command(c) => {
+                if !command_exists(&c.command) {
+                    let err = ConfigValidationError::CommandNotFound {
+                        notifier_id: notifier.id.clone(),
+                        command: c.command.clone()
+                    };
+                    return Err(err);
+                }
+            },
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn command_exists(command: &str) -> bool {
+    let res = std::process::Command::new("which")
+        .arg(command)
+        .output();
+
+    match res {
+        Ok(output) => output.status.success(),
+        // if `which` command does not exist on the current system, we just return true
+        Err(_) => true
+    }
 }
 
 fn verify_empty_notifiers(config: &FileConfig, warnings: &mut Vec<String>) {
