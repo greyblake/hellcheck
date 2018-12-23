@@ -11,10 +11,13 @@ use std::sync::mpsc;
 mod error;
 mod config;
 mod config_parser;
+mod config_validator;
 mod reactor;
 
 use crate::config::{FileConfig, CheckerConfig};
 use crate::config_parser::parse_config;
+use crate::config_validator::validate_config;
+
 use crate::reactor::{StateMessage, State};
 
 
@@ -26,13 +29,27 @@ pub fn load_config() -> FileConfig {
     let mut content = String::new();
     buf_reader.read_to_string(&mut content).expect("Failed to read from file");
 
-    match parse_config(&content) {
+    let config = match parse_config(&content) {
         Ok(config) => config,
         Err(err) => {
-            eprintln!("{}", err);
+            eprintln!("ERROR: {}", err);
+            std::process::exit(1);
+        }
+    };
+
+    match validate_config(&config) {
+        Ok(warnings) => {
+            for warning in warnings {
+                eprintln!("WARNING: {}", warning);
+            }
+        },
+        Err(err) => {
+            eprintln!("ERROR: {}", err);
             std::process::exit(1);
         }
     }
+
+    config
 }
 
 
