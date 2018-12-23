@@ -10,6 +10,7 @@ pub fn validate_config(config: &FileConfig) -> Result<Vec<String>> {
 
     let mut warnings: Vec<String> = vec![];
     verify_empty_notifiers(config, &mut warnings);
+    verify_unused_notifiers(config, &mut warnings);
 
     Ok(warnings)
 }
@@ -44,6 +45,20 @@ fn verify_empty_notifiers(config: &FileConfig, warnings: &mut Vec<String>) {
     for checker in config.checkers.iter() {
         if checker.notifiers.is_empty() {
             let msg = format!("`checkers.{}.notifiers` is empty. You will not get notifications", checker.id);
+            warnings.push(msg);
+        }
+    }
+}
+
+fn verify_unused_notifiers(config: &FileConfig, warnings: &mut Vec<String>) {
+    let used_notifier_ids: Vec<&String> = config.checkers.iter()
+        .map(|c| c.notifiers.iter() )
+        .flatten()
+        .collect();
+
+    for notifier in config.notifiers.iter() {
+        if !used_notifier_ids.contains(&&notifier.id) {
+            let msg = format!("Notifier `{}` is not used by any of the checkers.", notifier.id);
             warnings.push(msg);
         }
     }
