@@ -16,19 +16,18 @@ pub fn validate_config(config: &FileConfig) -> Result<Vec<String>> {
     Ok(warnings)
 }
 
-
 // Ensure, that all checkers refer to declared notifiers.
 fn verify_checker_notifiers(config: &FileConfig) -> Result<()> {
     for checker in config.checkers.iter() {
         for notifier_id in checker.notifiers.iter() {
             match config.get_notifier_by_id(notifier_id) {
-                Some(_) => {},
+                Some(_) => {}
                 None => {
                     let err = ConfigValidationError::UnknownNotifier {
                         checker_id: checker.id.to_owned(),
-                        notifier_id: notifier_id.to_owned()
+                        notifier_id: notifier_id.to_owned(),
                     };
-                    return Err(err)
+                    return Err(err);
                 }
             }
         }
@@ -45,11 +44,11 @@ fn verify_command_notifiers(config: &FileConfig) -> Result<()> {
                 if !command_exists(&c.command) {
                     let err = ConfigValidationError::CommandNotFound {
                         notifier_id: notifier.id.clone(),
-                        command: c.command.clone()
+                        command: c.command.clone(),
                     };
                     return Err(err);
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -57,14 +56,12 @@ fn verify_command_notifiers(config: &FileConfig) -> Result<()> {
 }
 
 fn command_exists(command: &str) -> bool {
-    let res = std::process::Command::new("which")
-        .arg(command)
-        .output();
+    let res = std::process::Command::new("which").arg(command).output();
 
     match res {
         Ok(output) => output.status.success(),
         // if `which` command does not exist on the current system, we just return true
-        Err(_) => true
+        Err(_) => true,
     }
 }
 
@@ -76,21 +73,29 @@ fn verify_empty_notifiers(config: &FileConfig, warnings: &mut Vec<String>) {
 
     for checker in config.checkers.iter() {
         if checker.notifiers.is_empty() {
-            let msg = format!("`checkers.{}.notifiers` is empty. You will not get notifications", checker.id);
+            let msg = format!(
+                "`checkers.{}.notifiers` is empty. You will not get notifications",
+                checker.id
+            );
             warnings.push(msg);
         }
     }
 }
 
 fn verify_unused_notifiers(config: &FileConfig, warnings: &mut Vec<String>) {
-    let used_notifier_ids: Vec<&String> = config.checkers.iter()
-        .map(|c| c.notifiers.iter() )
+    let used_notifier_ids: Vec<&String> = config
+        .checkers
+        .iter()
+        .map(|c| c.notifiers.iter())
         .flatten()
         .collect();
 
     for notifier in config.notifiers.iter() {
         if !used_notifier_ids.contains(&&notifier.id) {
-            let msg = format!("Notifier `{}` is not used by any of the checkers.", notifier.id);
+            let msg = format!(
+                "Notifier `{}` is not used by any of the checkers.",
+                notifier.id
+            );
             warnings.push(msg);
         }
     }

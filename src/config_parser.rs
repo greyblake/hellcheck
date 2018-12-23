@@ -1,9 +1,12 @@
 use std::time::Duration;
 
 use hyper::Uri;
-use yaml_rust::{YamlLoader, yaml::Yaml};
+use yaml_rust::{yaml::Yaml, YamlLoader};
 
-use crate::config::{FileConfig, CheckerConfig, NotifierConfig, Notifier, TelegramNotifierConfig, CommandNotifierConfig};
+use crate::config::{
+    CheckerConfig, CommandNotifierConfig, FileConfig, Notifier, NotifierConfig,
+    TelegramNotifierConfig,
+};
 use crate::error::ConfigError;
 
 type Result<T> = std::result::Result<T, ConfigError>;
@@ -23,24 +26,28 @@ pub fn parse_config(yaml: &str) -> Result<FileConfig> {
                     match key.as_ref() {
                         "checkers" => {
                             checkers = parse_checkers(val)?;
-                        },
+                        }
                         "notifiers" => {
                             notifiers = parse_notifiers(val)?;
-                        },
+                        }
                         _ => {
                             return Err(ConfigError::UnkownRootElement { name: key });
                         }
                     };
                 }
-            },
+            }
             _ => {
-                return Err(ConfigError::GeneralError { message: "Root element of YAML must be Hash".to_owned() });
+                return Err(ConfigError::GeneralError {
+                    message: "Root element of YAML must be Hash".to_owned(),
+                });
             }
         }
     }
 
-
-    Ok(FileConfig { checkers, notifiers })
+    Ok(FileConfig {
+        checkers,
+        notifiers,
+    })
 }
 
 fn parse_key(key: &Yaml) -> Result<String> {
@@ -49,7 +56,7 @@ fn parse_key(key: &Yaml) -> Result<String> {
         Yaml::Integer(num) => Ok(num.to_string()),
         _ => {
             let message = format!("Key must be a string. Got {:?}", key);
-            Err(ConfigError::GeneralError { message: message})
+            Err(ConfigError::GeneralError { message: message })
         }
     }
 }
@@ -60,7 +67,7 @@ fn parse_yaml_to_string(val: &Yaml) -> Result<String> {
         Yaml::Integer(num) => Ok(num.to_string()),
         _ => {
             let message = format!("Key must be a string. Got {:?}", val);
-            Err(ConfigError::GeneralError { message: message})
+            Err(ConfigError::GeneralError { message: message })
         }
     }
 }
@@ -74,10 +81,10 @@ fn parse_yaml_to_vec(val: &Yaml) -> Result<Vec<String>> {
                 let item = parse_yaml_to_string(yaml_item)?;
                 items.push(item);
             }
-        },
+        }
         _ => {
             let message = format!("Value must be an array. Got {:?}", val);
-            return Err(ConfigError::GeneralError { message: message});
+            return Err(ConfigError::GeneralError { message: message });
         }
     }
 
@@ -89,7 +96,7 @@ fn parse_yaml_to_hash(val: &Yaml) -> Result<&yaml_rust::yaml::Hash> {
         Yaml::Hash(hash) => Ok(hash),
         _ => {
             let message = format!("Value must be a hash. Got {:?}", val);
-            return Err(ConfigError::GeneralError { message: message});
+            return Err(ConfigError::GeneralError { message: message });
         }
     }
 }
@@ -103,10 +110,10 @@ fn parse_notifiers(notifier_configs: &Yaml) -> Result<Vec<Notifier>> {
                 let checker = parse_notifier(yaml_key, val)?;
                 notifiers.push(checker);
             }
-        },
+        }
         _ => {
             let message = format!("`notifiers` must be a hash. Got {:?}", notifier_configs);
-            return Err(ConfigError::GeneralError { message: message});
+            return Err(ConfigError::GeneralError { message: message });
         }
     }
 
@@ -123,8 +130,11 @@ fn parse_notifier(key: &Yaml, body: &Yaml) -> Result<Notifier> {
 
 fn parse_notifier_config(id: &str, body: &Yaml) -> Result<NotifierConfig> {
     let hash = parse_yaml_to_hash(body)?;
-    let type_val_yaml = hash.get(&Yaml::String("type".to_owned()))
-        .ok_or(ConfigError::FieldMissing { path: format!("notifiers.{}.type", id) } )?;
+    let type_val_yaml =
+        hash.get(&Yaml::String("type".to_owned()))
+            .ok_or(ConfigError::FieldMissing {
+                path: format!("notifiers.{}.type", id),
+            })?;
 
     let type_val = parse_yaml_to_string(type_val_yaml)?;
 
@@ -132,13 +142,16 @@ fn parse_notifier_config(id: &str, body: &Yaml) -> Result<NotifierConfig> {
         "telegram" => {
             let config = parse_telegram_notifier_config(id, body)?;
             Ok(NotifierConfig::Telegram(config))
-        },
+        }
         "command" => {
             let config = parse_command_notifier_config(id, body)?;
             Ok(NotifierConfig::Command(config))
         }
         _ => {
-            let e = ConfigError::InvalidNotifierType { notifier_id: id.to_owned(), type_value: type_val };
+            let e = ConfigError::InvalidNotifierType {
+                notifier_id: id.to_owned(),
+                type_value: type_val,
+            };
             Err(e)
         }
     }
@@ -158,30 +171,34 @@ fn parse_telegram_notifier_config(id: &str, body: &Yaml) -> Result<TelegramNotif
                     "token" => {
                         let attr_val = parse_yaml_to_string(&attr_yaml_val)?;
                         token_opt = Some(attr_val);
-                    },
+                    }
                     "chat_id" => {
                         let attr_val = parse_yaml_to_string(&attr_yaml_val)?;
                         chat_id_opt = Some(attr_val);
-                    },
+                    }
                     _ => {
                         let e = ConfigError::UnknownNotifierAttribute {
                             notifier_id: id.to_string(),
                             notifier_type: "telegram".to_owned(),
-                            attr_name: attr_key
+                            attr_name: attr_key,
                         };
                         return Err(e);
                     }
                 }
             }
-        },
+        }
         _ => {
             let message = format!("`notifiers.{}` must be a hash. Got {:?}", id, body);
             return Err(ConfigError::GeneralError { message: message });
         }
     };
 
-    let token = token_opt.ok_or(ConfigError::FieldMissing { path: format!("notifiers.{}.token", id) } )?;
-    let chat_id = chat_id_opt.ok_or(ConfigError::FieldMissing { path: format!("notifiers.{}.chat_id", id) } )?;
+    let token = token_opt.ok_or(ConfigError::FieldMissing {
+        path: format!("notifiers.{}.token", id),
+    })?;
+    let chat_id = chat_id_opt.ok_or(ConfigError::FieldMissing {
+        path: format!("notifiers.{}.chat_id", id),
+    })?;
 
     let config = TelegramNotifierConfig { token, chat_id };
     Ok(config)
@@ -197,44 +214,47 @@ fn parse_command_notifier_config(id: &str, body: &Yaml) -> Result<CommandNotifie
 
                 match attr_key.as_ref() {
                     "type" => (),
-                    "command" => {
-                        match parse_yaml_to_vec(&attr_yaml_val) {
-                            Ok(vals) => {
-                                if let Some((command, arguments)) = vals.split_first() {
-                                    let config = CommandNotifierConfig {
-                                        command: command.clone(),
-                                        arguments: arguments.to_vec()
-                                    };
-                                    config_opt = Some(config);
-                                } else {
-                                    let message = format!("`notifiers.{}.command` must have a command specified", id);
-                                    return Err(ConfigError::GeneralError { message: message });
-                                }
-                            },
-                            Err(_) => {
-                                let message = format!("`notifiers.{}.command` must be an array.", id);
+                    "command" => match parse_yaml_to_vec(&attr_yaml_val) {
+                        Ok(vals) => {
+                            if let Some((command, arguments)) = vals.split_first() {
+                                let config = CommandNotifierConfig {
+                                    command: command.clone(),
+                                    arguments: arguments.to_vec(),
+                                };
+                                config_opt = Some(config);
+                            } else {
+                                let message = format!(
+                                    "`notifiers.{}.command` must have a command specified",
+                                    id
+                                );
                                 return Err(ConfigError::GeneralError { message: message });
                             }
+                        }
+                        Err(_) => {
+                            let message = format!("`notifiers.{}.command` must be an array.", id);
+                            return Err(ConfigError::GeneralError { message: message });
                         }
                     },
                     _ => {
                         let e = ConfigError::UnknownNotifierAttribute {
                             notifier_id: id.to_string(),
                             notifier_type: "command".to_owned(),
-                            attr_name: attr_key
+                            attr_name: attr_key,
                         };
                         return Err(e);
                     }
                 }
             }
-        },
+        }
         _ => {
             let message = format!("`notifiers.{}` must be a hash. Got {:?}", id, body);
             return Err(ConfigError::GeneralError { message: message });
         }
     };
 
-    let config = config_opt.ok_or(ConfigError::FieldMissing { path: format!("notifiers.{}.command", id) } )?;
+    let config = config_opt.ok_or(ConfigError::FieldMissing {
+        path: format!("notifiers.{}.command", id),
+    })?;
     Ok(config)
 }
 
@@ -247,7 +267,7 @@ fn parse_checkers(checker_configs: &Yaml) -> Result<Vec<CheckerConfig>> {
                 let checker = parse_checker(yaml_key, val)?;
                 checkers.push(checker);
             }
-        },
+        }
         _ => {
             let message = format!("`checkers` must be a hash. Got {:?}", checker_configs);
             return Err(ConfigError::GeneralError { message: message });
@@ -256,7 +276,6 @@ fn parse_checkers(checker_configs: &Yaml) -> Result<Vec<CheckerConfig>> {
 
     Ok(checkers)
 }
-
 
 fn parse_checker(key: &Yaml, body: &Yaml) -> Result<CheckerConfig> {
     let id = parse_key(key)?;
@@ -277,49 +296,62 @@ fn parse_checker(key: &Yaml, body: &Yaml) -> Result<CheckerConfig> {
                         match attr_val.parse::<humantime::Duration>() {
                             Ok(val) => {
                                 interval = val.into();
-                            },
+                            }
                             Err(_) => {
-                                let e = ConfigError::InvalidCheckerInterval { interval: attr_val, checker_id: id };
+                                let e = ConfigError::InvalidCheckerInterval {
+                                    interval: attr_val,
+                                    checker_id: id,
+                                };
                                 return Err(e);
                             }
                         }
-                    },
+                    }
                     "url" => {
                         let attr_val = parse_yaml_to_string(&attr_yaml_val)?;
                         match attr_val.parse::<Uri>() {
                             Ok(url) => {
                                 url_opt = Some(url);
-                            },
+                            }
                             Err(_) => {
-                                let e = ConfigError::InvalidCheckerUrl { checker_id: id, url: attr_val };
+                                let e = ConfigError::InvalidCheckerUrl {
+                                    checker_id: id,
+                                    url: attr_val,
+                                };
                                 return Err(e);
                             }
                         };
-                    },
+                    }
                     "notifiers" => {
                         notifiers = parse_yaml_to_vec(&attr_yaml_val)?;
                     }
                     _ => {
-                        let err = ConfigError::UnknownCheckerAttribute { checker_id: id.clone(), attr_name: attr_key };
+                        let err = ConfigError::UnknownCheckerAttribute {
+                            checker_id: id.clone(),
+                            attr_name: attr_key,
+                        };
                         return Err(err);
-
                     }
                 }
             }
-        },
+        }
         _ => {
             let message = format!("`checkers.{}` must be a hash. Got {:?}", id, body);
             return Err(ConfigError::GeneralError { message: message });
         }
     };
 
+    let url = url_opt.ok_or(ConfigError::FieldMissing {
+        path: format!("checkers.{}.url", id),
+    })?;
 
-    let url = url_opt.ok_or(ConfigError::FieldMissing { path: format!("checkers.{}.url", id) } )?;
-
-    let cf = CheckerConfig { id, interval, url, notifiers };
+    let cf = CheckerConfig {
+        id,
+        interval,
+        url,
+        notifiers,
+    };
     Ok(cf)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -360,7 +392,12 @@ mod tests {
                 chat_id: 8677112
         "#;
         let err = parse_config(yaml).unwrap_err();
-        assert_eq!(err, ConfigError::FieldMissing { path: "notifiers.telebot.token".to_owned() } )
+        assert_eq!(
+            err,
+            ConfigError::FieldMissing {
+                path: "notifiers.telebot.token".to_owned()
+            }
+        )
     }
 
     #[test]
@@ -378,6 +415,11 @@ mod tests {
                 chat_id: 8677112
         "#;
         let err = parse_config(yaml).unwrap_err();
-        assert_eq!(err, ConfigError::FieldMissing { path: "checkers.greyblake.url".to_owned() } )
+        assert_eq!(
+            err,
+            ConfigError::FieldMissing {
+                path: "checkers.greyblake.url".to_owned()
+            }
+        )
     }
 }
