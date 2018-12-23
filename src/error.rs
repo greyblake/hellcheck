@@ -32,9 +32,6 @@ pub enum ConfigError {
 
 #[derive(Debug, Fail, PartialEq)]
 pub enum ConfigValidationError {
-    #[fail(display = "Invalid YAML file: {}", err)]
-    InvalidYaml { err: yaml_rust::scanner::ScanError },
-
     #[fail(display = "`checkers.{}.notifiers` refers to an undeclared notifier `{}`", checker_id, notifier_id)]
     UnknownNotifier { checker_id: String, notifier_id: String }
 }

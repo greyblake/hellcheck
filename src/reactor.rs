@@ -1,9 +1,14 @@
-use std::sync::mpsc;
-use crate::config::{FileConfig, CheckerConfig, Notifier, NotifierConfig};
-
 use std::collections::HashMap;
+use std::sync::mpsc;
 
-#[derive(Debug, PartialEq)]
+use crate::config::{FileConfig, CheckerConfig, NotifierConfig};
+use crate::notifiers::{Notification, TelegramNotifier};
+use crate::notifiers::Notifier as NotifierTrait;
+
+
+
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum State {
     Up,
     Down
@@ -16,10 +21,10 @@ pub struct StateMessage {
 }
 
 
-
 pub fn spawn(receiver: mpsc::Receiver<StateMessage>, config: FileConfig) {
     ::std::thread::spawn(move || {
         let mut states = build_initial_states(&config);
+        let notifiers = build_notifiers(&config);
 
         loop {
             let msg = receiver.recv().unwrap();
@@ -31,9 +36,16 @@ pub fn spawn(receiver: mpsc::Receiver<StateMessage>, config: FileConfig) {
             // Send a message if state was changed
             if msg.state != *prev_state {
                  for notifier_id in checker.notifiers.iter() {
-                     println!("{}", notifier_id);
-                     let notifier = config.get_notifier_by_id(notifier_id).expect(&format!("Can not find identifier by id={}", notifier_id));
-                     notify(notifier, &checker, &msg.state);
+                     // unwrap is safe here, because notifiers were validate by config_validator.
+                     let notifier = notifiers.get(notifier_id).unwrap();
+                     let notification = build_notification(&checker, msg.state.clone());
+                     let res = notifier.notify(&notification);
+                     match res {
+                         Ok(_) => {},
+                         Err(_) => {
+                             eprintln!("ERROR: Notifier `{}` failed to notify that {} is {:?}", notifier_id, checker.id, msg.state);
+                         }
+                     }
                  }
             }
 
@@ -44,6 +56,14 @@ pub fn spawn(receiver: mpsc::Receiver<StateMessage>, config: FileConfig) {
     });
 }
 
+fn build_notification(checker: &CheckerConfig, state: State) -> Notification {
+    Notification {
+        checker_id: checker.id.clone(),
+        checker_url: format!("{}", checker.url),
+        state: state
+    }
+}
+
 fn build_initial_states(config: &FileConfig) -> HashMap<String, State> {
     let mut states: HashMap<String, State> = HashMap::new();
     for checker in config.checkers.iter() {
@@ -52,59 +72,14 @@ fn build_initial_states(config: &FileConfig) -> HashMap<String, State> {
     states
 }
 
-
-use hyper::Method;
-
-
-fn notify(notifier: Notifier, checker: &CheckerConfig, state: &State) {
-    match notifier.config {
-        NotifierConfig::Telegram(config) => {
-            let client = build_client();
-            let mut core = tokio_core::reactor::Core::new().unwrap();
-
-            let text = match state {
-                State::Up => {
-                    let emoji_baloon = '\u{1F388}';
-                    format!("{} is back! {}{}{}\n{}", checker.id, emoji_baloon, emoji_baloon, emoji_baloon, checker.url)
-                },
-                State::Down => {
-                    let emoji_fire = '\u{1F525}';
-                    format!("{} is on fire! {}{}{}\n{}", checker.id, emoji_fire, emoji_fire, emoji_fire, checker.url)
-                }
-
-            };
-            let chat_id = config.chat_id;
-
-            let url = format!("https://api.telegram.org/bot{}/sendMessage", config.token);
-            // TODO: use serde to build json
-            let json = format!("{{\"chat_id\":\"{}\",\"text\":\"{}\"}}", chat_id, text);
-
-            let uri: hyper::Uri = url.parse().unwrap();
-            let mut request = hyper::Request::new(hyper::Body::from(json));
-            *request.method_mut() = Method::POST;
-            *request.uri_mut() = uri.clone();
-            request.headers_mut().insert(
-                hyper::header::CONTENT_TYPE,
-                hyper::header::HeaderValue::from_static("application/json")
-            );
-
-            let f = client.request(request).and_then(|res| {
-                res.into_body().concat2()
-            });
-            core.run(f).unwrap();
-        }
+fn build_notifiers(config: &FileConfig) -> HashMap<String, Box<NotifierTrait>> {
+    let mut notifiers: HashMap<String, Box<NotifierTrait>> = HashMap::new();
+    for notifier_config in config.notifiers.iter() {
+        let notifier = match &notifier_config.config {
+            NotifierConfig::Telegram(telegram_config) => Box::new(TelegramNotifier::from_config(telegram_config))
+        };
+        notifiers.insert(notifier_config.id.clone(), notifier);
     }
-}
 
-use hyper::Client;
-use hyper::rt::{Future, Stream};
-use hyper_tls::HttpsConnector;
-
-type HttpsClient = hyper::Client<hyper_tls::HttpsConnector<hyper::client::connect::HttpConnector>>;
-fn build_client() -> HttpsClient {
-    let https = HttpsConnector::new(1).expect("TLS initialization failed");
-    let client = Client::builder()
-        .build::<_, hyper::Body>(https);
-
-    client
+    notifiers
 }

@@ -13,6 +13,7 @@ mod config;
 mod config_parser;
 mod config_validator;
 mod reactor;
+mod notifiers;
 
 use crate::config::{FileConfig, CheckerConfig};
 use crate::config_parser::parse_config;
@@ -65,7 +66,17 @@ pub fn run() {
     let f = futures::future::select_all(checkers_futures);
 
     let mut core = tokio_core::reactor::Core::new().unwrap();
-    core.run(f);
+
+    // Run core forever
+    let res = core.run(f);
+
+    match res {
+        Ok(_) => {},
+        Err(_) => {
+            eprintln!("ERROR: looks likes hellcheck crashed");
+            std::process::exit(1);
+        }
+    }
 }
 
 struct CheckRunner {
