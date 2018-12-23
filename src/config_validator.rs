@@ -1,6 +1,6 @@
 // Validates FileConfig for inconsistencies.
 
-use crate::config::{FileConfig, Notifier, NotifierConfig};
+use crate::config::{FileConfig, NotifierConfig};
 use crate::error::ConfigValidationError;
 
 type Result<T> = ::std::result::Result<T, ConfigValidationError>;
