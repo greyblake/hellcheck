@@ -19,16 +19,26 @@ DISCLAIMER: This is a prove of concept, the project is ongoing development.
   * [ ] Custom OKish HTTP status
 * [ ] Use structopt/clap for nice command line interface
 * [ ] Implement `hellcheck test` command to test notifiers
-* [ ] Configure CI
-  * [ ] Run build/tests
-  * [ ] Setup clippy lint
-  * [ ] Setup rusmft
+* [x] Configure CI
+  * [x] Run build/tests
+  * [x] Setup clippy lint
+  * [x] Setup rusmft
 
 ### Install
 
-With cargo:
+### Install with cargo
 
+Install system dependencies.
+
+On Debian/Ubuntu:
+
+```sh
+apt-get install libssl-dev pkg-config
 ```
+
+Install hellcheck crate:
+
+```sh
 cargo install hellcheck
 ```
 
