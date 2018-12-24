@@ -20,7 +20,7 @@ pub fn parse_yaml_to_string(val: &Yaml) -> Result<String> {
         Yaml::String(s) => Ok(s.to_owned()),
         Yaml::Integer(num) => Ok(num.to_string()),
         _ => {
-            let message = format!("Key must be a string. Got {:?}", val);
+            let message = format!("Expected a string. Got {:?}", val);
             Err(ConfigError::GeneralError { message })
         }
     }

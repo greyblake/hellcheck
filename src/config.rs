@@ -37,7 +37,7 @@ pub struct TelegramNotifierConfig {
 #[derive(Debug, Clone)]
 pub struct HipchatNotifierConfig {
     pub base_url: Uri,
-    pub auth_token: String,
+    pub token: String,
     pub room_id: String
 }
 

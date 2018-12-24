@@ -9,10 +9,10 @@ DISCLAIMER: This is a prove of concept, the project is ongoing development.
 ## Roadmap
 
 * [ ] Support notifiers
-  * [x] command customer notifier
-  * [x] telegram
+  * [x] Command customer notifier
+  * [x] Telegram
+  * [x] HipChat
   * [ ] Slack
-  * [ ] HipChat
 * [ ] Checkers
   * [x] Custom intervals
   * [ ] Verify body (presence of some given text)
@@ -83,10 +83,21 @@ Chat ID can be found out with [GetidsBot](https://telegram.me/getidsbot).
 
 ```yaml
 notifiers:
-  me:
+  notifier_name:
     type: telegram
     token: <BOT-TOKEN>
     chat_id: <CHAT-ID>
+```
+
+### HipChat notifier
+
+```yaml
+notifiers:
+  notifier_name:
+    type: hipchat
+    base_url: https://hipchat.com
+    token: <AUTH_TOKEN>
+    room_id: <ROOM_NAME_OR_ID>
 ```
 
 ### Command notifier
