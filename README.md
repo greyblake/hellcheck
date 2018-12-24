@@ -23,6 +23,11 @@ DISCLAIMER: This is a prove of concept, the project is ongoing development.
   * [x] Run build/tests
   * [x] Setup clippy lint
   * [x] Setup rusmft
+* [ ] Inject credentials with env variables into yaml file
+* [ ] Allow customizable messages for notifiers
+* [ ] Allow custom scripts as checkers
+* [ ] Make pretty colorized output for console
+* [ ] Validate for unexpected panics in the code (unwrap, panic, expect, etc..)
 
 ### Install
 
