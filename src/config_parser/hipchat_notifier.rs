@@ -1,9 +1,9 @@
-use yaml_rust::yaml::Yaml;
 use hyper::Uri;
+use yaml_rust::yaml::Yaml;
 
+use super::common::{parse_key, parse_yaml_to_string, Result};
 use crate::config::HipchatNotifierConfig;
 use crate::error::ConfigError;
-use super::common::{Result, parse_key, parse_yaml_to_string};
 
 pub fn parse(id: &str, body: &Yaml) -> Result<HipchatNotifierConfig> {
     let mut token_opt: Option<String> = None;
@@ -24,15 +24,18 @@ pub fn parse(id: &str, body: &Yaml) -> Result<HipchatNotifierConfig> {
                     "room_id" => {
                         let attr_val = parse_yaml_to_string(&attr_yaml_val)?;
                         room_id_opt = Some(attr_val);
-                    },
+                    }
                     "base_url" => {
                         let val = parse_yaml_to_string(&attr_yaml_val)?;
-                        let url: Uri = val.parse().map_err( |_| {
-                            let message = format!("`{}` in `notifiers.{}.base_url` is not a valid URL", val, id);
+                        let url: Uri = val.parse().map_err(|_| {
+                            let message = format!(
+                                "`{}` in `notifiers.{}.base_url` is not a valid URL",
+                                val, id
+                            );
                             ConfigError::GeneralError { message }
                         })?;
                         base_url_opt = Some(url);
-                    },
+                    }
                     _ => {
                         let e = ConfigError::UnknownNotifierAttribute {
                             notifier_id: id.to_string(),
@@ -60,6 +63,10 @@ pub fn parse(id: &str, body: &Yaml) -> Result<HipchatNotifierConfig> {
         path: format!("notifiers.{}.base_url", id),
     })?;
 
-    let config =  HipchatNotifierConfig { token, room_id, base_url };
+    let config = HipchatNotifierConfig {
+        token,
+        room_id,
+        base_url,
+    };
     Ok(config)
 }

@@ -1,19 +1,15 @@
 use yaml_rust::{yaml::Yaml, YamlLoader};
 
-
-
-use crate::config::{
-    CheckerConfig, FileConfig, Notifier, NotifierConfig,
-};
+use crate::config::{CheckerConfig, FileConfig, Notifier, NotifierConfig};
 use crate::error::ConfigError;
 
-mod common;
-mod telegram_notifier;
-mod command_notifier;
-mod hipchat_notifier;
 mod checker;
+mod command_notifier;
+mod common;
+mod hipchat_notifier;
+mod telegram_notifier;
 
-use self::common::{Result, parse_key, parse_yaml_to_string, parse_yaml_to_hash};
+use self::common::{parse_key, parse_yaml_to_hash, parse_yaml_to_string, Result};
 
 pub fn parse_config(yaml: &str) -> Result<FileConfig> {
     let mut checkers = vec![];
@@ -95,15 +91,15 @@ fn parse_notifier_config(id: &str, body: &Yaml) -> Result<NotifierConfig> {
         "telegram" => {
             let config = telegram_notifier::parse(id, body)?;
             Ok(NotifierConfig::Telegram(config))
-        },
+        }
         "command" => {
             let config = command_notifier::parse(id, body)?;
             Ok(NotifierConfig::Command(config))
-        },
+        }
         "hipchat" => {
             let config = hipchat_notifier::parse(id, body)?;
             Ok(NotifierConfig::Hipchat(config))
-        },
+        }
         _ => {
             let e = ConfigError::InvalidNotifierType {
                 notifier_id: id.to_owned(),

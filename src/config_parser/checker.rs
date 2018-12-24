@@ -1,11 +1,11 @@
-use yaml_rust::yaml::Yaml;
 use hyper::Uri;
+use yaml_rust::yaml::Yaml;
 
 use std::time::Duration;
 
+use super::common::{parse_key, parse_yaml_to_string, parse_yaml_to_vec, Result};
 use crate::config::CheckerConfig;
 use crate::error::ConfigError;
-use super::common::{Result, parse_key, parse_yaml_to_string, parse_yaml_to_vec};
 
 pub fn parse(key: &Yaml, body: &Yaml) -> Result<CheckerConfig> {
     let id = parse_key(key)?;

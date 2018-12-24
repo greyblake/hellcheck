@@ -1,8 +1,8 @@
 use yaml_rust::yaml::Yaml;
 
+use super::common::{parse_key, parse_yaml_to_string, Result};
 use crate::config::TelegramNotifierConfig;
 use crate::error::ConfigError;
-use super::common::{Result, parse_key, parse_yaml_to_string};
 
 pub fn parse(id: &str, body: &Yaml) -> Result<TelegramNotifierConfig> {
     let mut token_opt: Option<String> = None;

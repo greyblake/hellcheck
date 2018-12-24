@@ -1,8 +1,8 @@
 use yaml_rust::yaml::Yaml;
 
+use super::common::{parse_key, parse_yaml_to_vec, Result};
 use crate::config::CommandNotifierConfig;
 use crate::error::ConfigError;
-use super::common::{Result, parse_key, parse_yaml_to_vec};
 
 pub fn parse(id: &str, body: &Yaml) -> Result<CommandNotifierConfig> {
     let mut config_opt: Option<CommandNotifierConfig> = None;

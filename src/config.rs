@@ -25,7 +25,7 @@ pub struct Notifier {
 pub enum NotifierConfig {
     Telegram(TelegramNotifierConfig),
     Command(CommandNotifierConfig),
-    Hipchat(HipchatNotifierConfig)
+    Hipchat(HipchatNotifierConfig),
 }
 
 #[derive(Debug, Clone)]
@@ -38,7 +38,7 @@ pub struct TelegramNotifierConfig {
 pub struct HipchatNotifierConfig {
     pub base_url: Uri,
     pub token: String,
-    pub room_id: String
+    pub room_id: String,
 }
 
 #[derive(Debug, Clone)]
