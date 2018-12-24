@@ -26,23 +26,15 @@ impl Notifier for TelegramNotifier {
             State::Up => {
                 let emoji_baloon = '\u{1F388}';
                 format!(
-                    "{} is back! {}{}{}\n{}",
-                    notification.checker_id,
-                    emoji_baloon,
-                    emoji_baloon,
-                    emoji_baloon,
-                    notification.checker_url
+                    "{} is up {}\n{}",
+                    notification.checker_id, emoji_baloon, notification.checker_url
                 )
             }
             State::Down => {
                 let emoji_fire = '\u{1F525}';
                 format!(
-                    "{} is on fire! {}{}{}\n{}",
-                    notification.checker_id,
-                    emoji_fire,
-                    emoji_fire,
-                    emoji_fire,
-                    notification.checker_url
+                    "{} is down {}\n{}",
+                    notification.checker_id, emoji_fire, notification.checker_url
                 )
             }
         };

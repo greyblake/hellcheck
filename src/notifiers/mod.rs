@@ -6,6 +6,9 @@ pub use self::telegram::TelegramNotifier;
 mod command;
 pub use self::command::CommandNotifier;
 
+mod hipchat;
+pub use self::hipchat::HipchatNotifier;
+
 #[derive(Debug)]
 pub struct Notification {
     pub checker_id: String,
