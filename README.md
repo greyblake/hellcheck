@@ -23,6 +23,7 @@ DISCLAIMER: This is a prove of concept, the project is ongoing development.
   * [x] Run build/tests
   * [x] Setup clippy lint
   * [x] Setup rusmft
+* [ ] Ensure endpoints with http basic authentication can be health checked
 * [ ] Inject credentials with env variables into yaml file
 * [ ] Allow customizable messages for notifiers
 * [ ] Allow custom scripts as checkers
