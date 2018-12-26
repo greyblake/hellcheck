@@ -3,7 +3,9 @@ use std::sync::mpsc;
 
 use crate::config::{CheckerConfig, FileConfig, NotifierConfig};
 use crate::notifiers::Notifier as NotifierTrait;
-use crate::notifiers::{CommandNotifier, HipchatNotifier, Notification, TelegramNotifier};
+use crate::notifiers::{
+    CommandNotifier, HipchatNotifier, Notification, SlackNotifier, TelegramNotifier,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum State {
@@ -81,6 +83,9 @@ fn build_notifiers(config: &FileConfig) -> HashMap<String, Box<NotifierTrait>> {
             }
             NotifierConfig::Hipchat(hipchat_config) => {
                 Box::new(HipchatNotifier::from_config(hipchat_config))
+            }
+            NotifierConfig::Slack(slack_config) => {
+                Box::new(SlackNotifier::from_config(slack_config))
             }
         };
         notifiers.insert(notifier_config.id.clone(), notifier);
