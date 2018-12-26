@@ -12,7 +12,7 @@ DISCLAIMER: This is a prove of concept, the project is ongoing development.
   * [x] Command customer notifier
   * [x] Telegram
   * [x] HipChat
-  * [ ] Slack
+  * [x] Slack
 * [ ] Checkers
   * [x] Custom intervals
   * [ ] Verify body (presence of some given text)
@@ -54,25 +54,35 @@ Create `hellcheck.yml` file:
 
 ```yaml
 checkers:
-  greyblake:
-    url: https://www.greyblake.com
-    interval: 10s
-    notifiers: [me]
+  example:
+    url: https://www.example.com
+    notifiers: [my_team]
   localhost8000:
     url: http://localhost:8000
     interval: 1500ms
-    notifiers: [me, custom]
+    notifiers: [my_team, sound_alarm]
 notifiers:
-  me:
-    type: telegram
-    token: <BOT-TOKEN>
-    chat_id: <CHAT-ID>
-  custom:
+  my_team:
+    type: slack
+    token: <WEBHOOK_URL>
+  sound_alarm:
     type: command
     command: ["./custom.sh", "arg1", "arg2"]
 ```
 
 ## Notifiers
+
+### Slack notifier
+
+Create an [incoming webhook](https://api.slack.com/incoming-webhooks) in Slack.
+Then define your notifier with type `slack` and `webhook_url`:
+
+```yaml
+notifiers:
+  notifier_name:
+    type: slack
+    webhook_url: <WEBHOOK_URL>
+```
 
 ### Telegram notifier
 

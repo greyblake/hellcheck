@@ -7,6 +7,7 @@ mod checker;
 mod command_notifier;
 mod common;
 mod hipchat_notifier;
+mod slack_notifier;
 mod telegram_notifier;
 
 use self::common::{parse_key, parse_yaml_to_hash, parse_yaml_to_string, Result};
@@ -99,6 +100,10 @@ fn parse_notifier_config(id: &str, body: &Yaml) -> Result<NotifierConfig> {
         "hipchat" => {
             let config = hipchat_notifier::parse(id, body)?;
             Ok(NotifierConfig::Hipchat(config))
+        }
+        "slack" => {
+            let config = slack_notifier::parse(id, body)?;
+            Ok(NotifierConfig::Slack(config))
         }
         _ => {
             let e = ConfigError::InvalidNotifierType {
