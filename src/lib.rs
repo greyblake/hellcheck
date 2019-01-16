@@ -14,7 +14,7 @@ mod error;
 mod notifiers;
 mod reactor;
 
-use crate::config::{CheckerConfig, FileConfig};
+use crate::config::{CheckerConfig, FileConfig, BasicAuth};
 use crate::config_parser::parse_config;
 use crate::config_validator::validate_config;
 
@@ -98,7 +98,10 @@ impl CheckRunner {
 
         let f = stream.for_each(move |_| {
             let checker_id = id.clone();
-            client.get(service.url.clone()).then(move |r| {
+
+            let req = build_request(&service);
+
+            client.request(req).then(move |r| {
                 let state = match r {
                     Ok(resp) => {
                         if resp.status() == 200 {
@@ -120,6 +123,29 @@ impl CheckRunner {
         });
         Box::new(f)
     }
+}
+
+fn build_request(service: &CheckerConfig) -> hyper::Request<hyper::Body> {
+    let mut builder = hyper::Request::get(service.url.clone());
+
+    if let Some(ref basic_auth) = service.basic_auth {
+        let authorization_header_value = build_authorization_header_value(basic_auth);
+        builder.header(
+            hyper::header::AUTHORIZATION,
+            authorization_header_value
+        );
+    }
+
+    builder
+        .body(hyper::Body::empty())
+        .unwrap()
+}
+
+fn build_authorization_header_value(auth: &BasicAuth) -> hyper::header::HeaderValue {
+    let credentials = format!("{}:{}", auth.username, auth.password);
+    let encoded_credentials = base64::encode(&credentials);
+    let value = format!("Basic {}", encoded_credentials);
+    hyper::header::HeaderValue::from_str(&value).unwrap()
 }
 
 fn build_client() -> HttpsClient {
