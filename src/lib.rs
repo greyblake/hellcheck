@@ -14,7 +14,7 @@ mod error;
 mod notifiers;
 mod reactor;
 
-use crate::config::{CheckerConfig, FileConfig, BasicAuth};
+use crate::config::{BasicAuth, CheckerConfig, FileConfig};
 use crate::config_parser::parse_config;
 use crate::config_validator::validate_config;
 
@@ -130,15 +130,10 @@ fn build_request(service: &CheckerConfig) -> hyper::Request<hyper::Body> {
 
     if let Some(ref basic_auth) = service.basic_auth {
         let authorization_header_value = build_authorization_header_value(basic_auth);
-        builder.header(
-            hyper::header::AUTHORIZATION,
-            authorization_header_value
-        );
+        builder.header(hyper::header::AUTHORIZATION, authorization_header_value);
     }
 
-    builder
-        .body(hyper::Body::empty())
-        .unwrap()
+    builder.body(hyper::Body::empty()).unwrap()
 }
 
 fn build_authorization_header_value(auth: &BasicAuth) -> hyper::header::HeaderValue {

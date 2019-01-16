@@ -4,7 +4,7 @@ use yaml_rust::yaml::Yaml;
 use std::time::Duration;
 
 use super::common::{parse_key, parse_yaml_to_string, parse_yaml_to_vec, Result};
-use crate::config::{CheckerConfig, BasicAuth};
+use crate::config::{BasicAuth, CheckerConfig};
 use crate::error::ConfigError;
 
 pub fn parse(key: &Yaml, body: &Yaml) -> Result<CheckerConfig> {
@@ -54,7 +54,7 @@ pub fn parse(key: &Yaml, body: &Yaml) -> Result<CheckerConfig> {
                     }
                     "notifiers" => {
                         notifiers = parse_yaml_to_vec(&attr_yaml_val)?;
-                    },
+                    }
                     "basic_auth" => {
                         let raw_basic_auth = parse_basic_auth(&id, &attr_yaml_val)?;
                         basic_auth = Some(raw_basic_auth);
@@ -102,13 +102,16 @@ fn parse_basic_auth(checker_id: &str, val: &Yaml) -> Result<BasicAuth> {
                     "username" => {
                         let attr_val = parse_key(&attr_yaml_val)?;
                         username_opt = Some(attr_val);
-                    },
+                    }
                     "password" => {
                         let attr_val = parse_key(&attr_yaml_val)?;
                         password_opt = Some(attr_val);
                     }
                     _ => {
-                        let message = format!("Unknown attribute checkers.{}.basic_auth.{}", checker_id, attr_key);
+                        let message = format!(
+                            "Unknown attribute checkers.{}.basic_auth.{}",
+                            checker_id, attr_key
+                        );
                         return Err(ConfigError::GeneralError { message });
                     }
                 }
@@ -124,7 +127,7 @@ fn parse_basic_auth(checker_id: &str, val: &Yaml) -> Result<BasicAuth> {
 
             let basic_auth = BasicAuth { username, password };
             Ok(basic_auth)
-        },
+        }
         _ => {
             let message = format!("basic_auth must be a hash. Got {:?}", val);
             Err(ConfigError::GeneralError { message })

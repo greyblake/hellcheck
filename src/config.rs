@@ -19,7 +19,7 @@ pub struct CheckerConfig {
 #[derive(Debug, Clone)]
 pub struct BasicAuth {
     pub username: String,
-    pub password: String
+    pub password: String,
 }
 
 #[derive(Debug, Clone)]
