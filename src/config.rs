@@ -11,8 +11,15 @@ pub struct FileConfig {
 pub struct CheckerConfig {
     pub id: String,
     pub url: Uri,
+    pub basic_auth: Option<BasicAuth>,
     pub interval: Duration,
     pub notifiers: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BasicAuth {
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Debug, Clone)]
