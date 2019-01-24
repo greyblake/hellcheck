@@ -1,3 +1,10 @@
+#### v0.1.2 - 2019-01-24
+* Implement CLI
+* Support basic authentication
+* Support Slack notifier
+* Support HipChat notifier
+* More meaningful error messages
+
 #### v0.1.1 - 2018-12-23
 * Better error handling
 * Validate configuration for inconsistencies
