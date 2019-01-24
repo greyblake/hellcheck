@@ -20,7 +20,7 @@ pub fn validate_config(config: &FileConfig) -> Result<Vec<String>> {
 fn verify_checker_presence(config: &FileConfig) -> Result<()> {
     match config.checkers.len() {
         0 => Err(ConfigValidationError::NoCheckers),
-        _ => Ok(())
+        _ => Ok(()),
     }
 }
 
