@@ -1,6 +1,7 @@
 use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
+mod helpers;
 mod test;
 mod watch;
 
@@ -10,7 +11,7 @@ use watch::WatchOpts;
 #[derive(StructOpt, Debug)]
 #[structopt(raw(setting = "AppSettings::InferSubcommands"))]
 enum Command {
-    /// Watch monitoring
+    /// Start watcher
     #[structopt(name = "watch")]
     Watch(WatchOpts),
 
