@@ -3,5 +3,5 @@ fn main() {
     // See: https://github.com/emk/rust-musl-builder#making-openssl-work
     openssl_probe::init_ssl_cert_env_vars();
 
-    hellcheck::run();
+    hellcheck::cli::run();
 }
