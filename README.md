@@ -2,35 +2,23 @@
 
 HTTP health checker.
 
-## Getting started
 
-DISCLAIMER: This is a prove of concept, the project is ongoing development.
+* [Installation](#installation)
+   * [Install with cargo](#install-with-cargo)
+* [Configuration](#configuration)
+   * [Basic configuration example](#basic-configuration-example)
+   * [Notifiers](#notifiers)
+      * [Slack notifier](#slack-notifier)
+      * [Telegram notifier](#telegram-notifier)
+      * [HipChat notifier](#hipchat-notifier)
+      * [Command notifier](#command-notifier)
+* [Start](#start)
+* [Roadmap](#roadmap)
+* [License](#license)
+* [Contributors](#contributors)
 
-## Roadmap
 
-* [ ] Support notifiers
-  * [x] Command customer notifier
-  * [x] Telegram
-  * [x] HipChat
-  * [x] Slack
-* [ ] Checkers
-  * [x] Custom intervals
-  * [ ] Verify body (presence of some given text)
-  * [ ] Custom OKish HTTP status
-* [ ] Use structopt/clap for nice command line interface
-* [ ] Implement `hellcheck test` command to test notifiers
-* [x] Configure CI
-  * [x] Run build/tests
-  * [x] Setup clippy lint
-  * [x] Setup rusmft
-* [x] Ensure endpoints with http basic authentication can be health checked
-* [ ] Inject credentials with env variables into yaml file
-* [ ] Allow customizable messages for notifiers
-* [ ] Allow custom scripts as checkers
-* [ ] Make pretty colorized output for console
-* [ ] Validate for unexpected panics in the code (unwrap, panic, expect, etc..)
-
-### Install
+## Installation
 
 ### Install with cargo
 
@@ -48,11 +36,14 @@ Install hellcheck crate:
 cargo install hellcheck
 ```
 
-### Configuration file
+## Configuration
 
-Create `hellcheck.yml` file:
+### Basic configuration example
+
+Configuration file `hellcheck.yml` may have the following format:
 
 ```yaml
+# Declare what has to be watched
 checkers:
   example:
     url: https://www.example.com
@@ -64,6 +55,8 @@ checkers:
     basic_auth:
       username: "foo"
       password: "bar"
+
+# Declare notification channels
 notifiers:
   my_team:
     type: slack
@@ -73,9 +66,9 @@ notifiers:
     command: ["./custom.sh", "arg1", "arg2"]
 ```
 
-## Notifiers
+### Notifiers
 
-### Slack notifier
+#### Slack notifier
 
 Create an [incoming webhook](https://api.slack.com/incoming-webhooks) in Slack.
 Then define your notifier with type `slack` and `webhook_url`:
@@ -87,7 +80,7 @@ notifiers:
     webhook_url: <WEBHOOK_URL>
 ```
 
-### Telegram notifier
+#### Telegram notifier
 
 For telegram notifier you have to create a bot with [BotFather](https://telegram.me/BotFather) and
 obtain the bot token.
@@ -102,7 +95,7 @@ notifiers:
     chat_id: <CHAT-ID>
 ```
 
-### HipChat notifier
+#### HipChat notifier
 
 ```yaml
 notifiers:
@@ -113,7 +106,7 @@ notifiers:
     room_id: <ROOM_NAME_OR_ID>
 ```
 
-### Command notifier
+#### Command notifier
 
 Command notifier allows you to invoke any shell command or custom script as notifier.
 
@@ -143,6 +136,30 @@ described in `checkers` configuration sections:
 ```
 hellcheck
 ```
+
+## Roadmap
+
+* [x] Support notifiers
+  * [x] Command customer notifier
+  * [x] Telegram
+  * [x] HipChat
+  * [x] Slack
+* [ ] Checkers
+  * [x] Custom intervals
+  * [ ] Verify body (presence of some given text)
+  * [ ] Custom OKish HTTP status
+* [x] Use structopt/clap for nice command line interface
+* [ ] Implement `hellcheck test` command to test notifiers
+* [x] Configure CI
+  * [x] Run build/tests
+  * [x] Setup clippy lint
+  * [x] Setup rusmft
+* [x] Ensure endpoints with http basic authentication can be health checked
+* [ ] Inject credentials with env variables into yaml file
+* [ ] Allow customizable messages for notifiers
+* [ ] Allow custom scripts as checkers
+* [ ] Make pretty colorized output for console
+* [ ] Validate for unexpected panics in the code (unwrap, panic, expect, etc..)
 
 ## License
 
