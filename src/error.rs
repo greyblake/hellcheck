@@ -77,4 +77,7 @@ pub enum ConfigValidationError {
         notifier_id: String,
         command: String,
     },
+
+    #[fail(display = "There are no checkers defined in the config file")]
+    NoCheckers,
 }

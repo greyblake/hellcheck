@@ -6,6 +6,7 @@ use crate::error::ConfigValidationError;
 type Result<T> = ::std::result::Result<T, ConfigValidationError>;
 
 pub fn validate_config(config: &FileConfig) -> Result<Vec<String>> {
+    verify_checker_presence(config)?;
     verify_checker_notifiers(config)?;
     verify_command_notifiers(config)?;
 
@@ -14,6 +15,13 @@ pub fn validate_config(config: &FileConfig) -> Result<Vec<String>> {
     verify_unused_notifiers(config, &mut warnings);
 
     Ok(warnings)
+}
+
+fn verify_checker_presence(config: &FileConfig) -> Result<()> {
+    match config.checkers.len() {
+        0 => Err(ConfigValidationError::NoCheckers),
+        _ => Ok(())
+    }
 }
 
 // Ensure, that all checkers refer to declared notifiers.

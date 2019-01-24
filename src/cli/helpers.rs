@@ -7,7 +7,11 @@ use crate::config::validator::validate_config;
 use crate::config::FileConfig;
 
 pub fn load_config(file_path: &str) -> FileConfig {
-    let file = File::open(file_path).unwrap();
+    let file = File::open(file_path).unwrap_or_else(|err| {
+        eprintln!("ERROR: Failed to open file {}.\n{}", file_path, err);
+        std::process::exit(1);
+    });
+
     let mut buf_reader = BufReader::new(file);
     let mut content = String::new();
     buf_reader
