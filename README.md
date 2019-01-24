@@ -134,7 +134,7 @@ Assuming, you have `./hellcheck.yml` in your current directory, this will start 
 described in `checkers` configuration sections:
 
 ```
-hellcheck
+hellcheck watch --file ./hellcheck.yml
 ```
 
 ## Roadmap
