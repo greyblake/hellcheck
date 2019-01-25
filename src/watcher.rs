@@ -3,6 +3,7 @@ use hyper::Client;
 use hyper_tls::HttpsConnector;
 
 use std::sync::mpsc;
+use std::time::Instant;
 
 use crate::config::{BasicAuth, CheckerConfig, FileConfig};
 use crate::reactor::{State, StateMessage};
@@ -42,7 +43,7 @@ impl CheckRunner {
         &'a self,
         service: &'a CheckerConfig,
     ) -> Box<Future<Item = (), Error = tokio_timer::Error> + 'a> {
-        let stream = tokio_timer::Interval::new_interval(service.interval);
+        let stream = tokio_timer::Interval::new(Instant::now(), service.interval);
         let client = build_client();
 
         let id = service.id.clone();
