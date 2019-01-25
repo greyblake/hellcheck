@@ -34,9 +34,10 @@ pub fn spawn(receiver: mpsc::Receiver<StateMessage>, config: FileConfig) {
             // Send a message if state was changed
             if msg.state != *prev_state {
                 for notifier_id in checker.notifiers.iter() {
-                    // unwrap is safe here, because notifiers were validate by config_validator.
+                    // unwrap is safe here, because notifiers were validated by config_validator.
                     let notifier = &notifiers[notifier_id];
                     let notification = build_notification(&checker, msg.state.clone());
+                    info!("Sending a notification to {}", notifier_id);
                     let res = notifier.notify(&notification);
                     match res {
                         Ok(_) => {}
