@@ -160,6 +160,7 @@ hellcheck watch --file ./hellcheck.yml
 * [ ] Allow custom scripts as checkers
 * [ ] Make pretty colorized output for console
 * [ ] Validate for unexpected panics in the code (unwrap, panic, expect, etc..)
+* [ ] Add logging
 
 ## License
 

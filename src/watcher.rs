@@ -52,6 +52,8 @@ impl CheckRunner {
 
             let req = build_request(&service);
 
+            info!("Sending a request to {}", service.url);
+
             client.request(req).then(move |r| {
                 let state = match r {
                     Ok(resp) => {
